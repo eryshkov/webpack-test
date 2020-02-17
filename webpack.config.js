@@ -87,6 +87,7 @@ module.exports = {
         hot: isDev
     },
     optimization: optimization(),
+    devtool: isDev ? 'source-map': '',
     plugins: [
         new HTMLWebpackPlugin({
             title: "Evgenii App",
