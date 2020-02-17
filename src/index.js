@@ -3,6 +3,7 @@ import Post from "@models/post";
 import('./styles.css');
 import json from '@/assets/json';
 import Webpacklogo from '@/assets/webpack-logo.png';
+import('@/babel');
 import xml from '@/assets/data.xml';
 import csv from '@/assets/data.csv';
 import('@/less.less');
