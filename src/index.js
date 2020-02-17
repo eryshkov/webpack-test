@@ -1,11 +1,20 @@
-import Post from "./post";
-
+import * as $ from 'jquery';
+import Post from "@models/post";
 import('./styles.css');
+import json from '@/assets/json';
+import Webpacklogo from '@/assets/webpack-logo.png';
+import xml from '@/assets/data.xml';
+import csv from '@/assets/data.csv';
+import('@/less.less');
+import('@/scss.scss');
 
-import json from "./assets/json";
+const post = new Post('Webpack post title', Webpacklogo);
 
-const post = new Post('Webpack post title');
+$('pre').html(post.toString());
 
-console.log('Post to string: ', post.toString());
+// console.log('Post to string: ', post.toString());
 
-console.log('JSON: ', json);
+// console.log('JSON: ', json);
+// console.log('XML: ', xml);
+// console.log('CSV: ', csv);
+

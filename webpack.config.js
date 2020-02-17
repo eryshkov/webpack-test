@@ -1,6 +1,51 @@
 const path = require('path');
 const HTMLWebpackPlugin = require('html-webpack-plugin');
 const {CleanWebpackPlugin} = require('clean-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+const MiniCSSExtractPlugin = require('mini-css-extract-plugin');
+const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+const TerserWebpackPlugin = require('terser-webpack-plugin');
+
+const isDev = process.env.NODE_ENV === 'development';
+const isProd = process.env.NODE_ENV === 'production';
+
+const optimization = () => {
+    const config = {
+        splitChunks: {
+            chunks: "all"
+        }
+    };
+
+    if (isProd) {
+        config.minimizer = [
+            new OptimizeCSSAssetsPlugin(),
+            new TerserWebpackPlugin()
+        ];
+    }
+
+    return config;
+};
+
+const filename = ext => isDev ? `[name].${ext}` : `[name].[hash].${ext}`;
+
+const cssLoaders = (extra) => {
+    const loaders = [{
+        loader: MiniCSSExtractPlugin.loader,
+        options: {
+            hmr: isDev,
+            reloadAll: true
+        }
+    }, 'css-loader'];
+
+    if (extra) {
+        loaders.push(extra);
+    }
+
+    return loaders;
+};
+
+console.log('IS DEV =', isDev);
+console.log('IS PROD =', isProd);
 
 module.exports = {
     context: path.resolve(__dirname, 'src'),
@@ -10,21 +55,69 @@ module.exports = {
         analytics: './analytics.js'
     },
     output: {
-        filename: '[name].[contenthash].js',
+        filename: filename('js'),
         path: path.resolve(__dirname, 'dist')
     },
+    resolve: {
+        extensions: ['.js', '.json'],
+        alias: {
+            '@models': path.resolve(__dirname, './src/Models'),
+            '@': path.resolve(__dirname, './src')
+        }
+    },
+    devServer: {
+        port: 4200,
+        hot: isDev
+    },
+    optimization: optimization(),
     plugins: [
         new HTMLWebpackPlugin({
             title: "Evgenii App",
-            template: './index.html'
+            template: './index.html',
+            minify: {
+                collapseWhitespace: isProd
+            }
         }),
-        new CleanWebpackPlugin()
+        new CleanWebpackPlugin(),
+        new CopyWebpackPlugin([
+            {
+                from: path.resolve(__dirname, 'src', 'favicon.ico'),
+                to: path.resolve(__dirname, 'dist')
+            }
+        ]),
+        new MiniCSSExtractPlugin({
+            filename: filename('css')
+        })
     ],
     module: {
         rules: [
             {
                 test: /\.css$/,
-                use: ['style-loader', 'css-loader']
+                use: cssLoaders()
+            },
+            {
+                test: /\.less$/,
+                use: cssLoaders('less-loader')
+            },
+            {
+                test: /\.s[ac]ss$/,
+                use: cssLoaders('sass-loader')
+            },
+            {
+                test: /\.(png|jpg|svg|gif)$/,
+                use: ['file-loader']
+            },
+            {
+                test: /\.(ttf|woff|woff2|eot)$/,
+                use: ['file-loader']
+            },
+            {
+                test: /\.xml$/,
+                use: ['xml-loader']
+            },
+            {
+                test: /\.csv$/,
+                use: ['csv-loader']
             }
         ]
     }
